@@ -1,0 +1,21 @@
+Package: tetgenr
+Type: Package
+Title: A Quality Tetrahedral Mesh Generator and A 3D Delaunay Triangulator
+Version: 1.6
+Date: 2022-06-18
+Authors@R: c(
+		person("Hang", "Si", email = "si@wias-berlin.de", role = "aut"),
+		person("Jonathan Richard", "Shewchuk", email = "jrs@cs.cmu.edu", role = "ctb"),
+		person("Michal", "Sudwoj", email = "msudwoj@student.ethz.ch", role = "cre")
+	)
+Description: One paragraph description of what the package does as one or more full sentences.
+License: AGPL (>= 3)
+Imports:
+	Rcpp (>= 1.0.8),
+	assertthat
+Suggests:
+	geometry
+LinkingTo:
+	Rcpp
+Encoding: UTF-8
+RoxygenNote: 7.2.0

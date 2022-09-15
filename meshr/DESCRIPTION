@@ -1,0 +1,19 @@
+Package: meshr
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: c(
+		person("Michal", "Sudwoj", email = "michal.sudwoj@student.ethz.ch", role = c("aut", "cre"))
+	)
+Description: What the package does (one paragraph).
+License: MIT
+Imports:
+	geometry,
+	tetgenr,
+	gmshr,
+	assertthat,
+	hdf5r,
+	glue,
+	dplyr,
+	xml2
+Encoding: UTF-8
+RoxygenNote: 7.2.0

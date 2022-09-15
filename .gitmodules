@@ -1,0 +1,3 @@
+[submodule "gmshr/src/gmsh"]
+	path = gmshr/src/gmsh
+	url = https://gitlab.onelab.info/gmsh/gmsh.git
