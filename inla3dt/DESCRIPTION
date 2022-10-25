@@ -8,6 +8,10 @@ Description: What the package does (one paragraph).
 License: MIT
 Imports:
 	assertthat,
-	Matrix
+	Matrix,
+	INLA,
+	inlamesh3d,
+	glue,
+	purrr
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1

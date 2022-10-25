@@ -8,8 +8,6 @@
 #'   The mesh geometry. Required.
 #' @param topology
 #'   The mesh topology. Required.
-#' @param open
-#'   Whether to open the result in ParaView, if available.
 #' @param ...
 #'   Further nodal or elemental attributes. Optional.
 #' 
@@ -26,11 +24,22 @@ write_xdmf <- function(
 	xdmf_file,
 	geometry,
 	topology,
-	open = TRUE,
-	...
+	times = NULL,
+	node_attributes = list(),
+	cell_attributes = list()
 ) {
+	if (is.null(node_attributes)) {
+		node_attributes <- list()
+	}
+	if (is.null(cell_attributes)) {
+		cell_attributes <- list()
+	}
+	
 	assert_that(is.matrix(geometry))
 	assert_that(is.matrix(topology))
+	assert_that(is.vector(times) || is.null(times))
+	assert_that(is.list(node_attributes))
+	assert_that(is.list(cell_attributes))
 	
 	# number of nodes
 	n_nodes <- dim(geometry)[1]
@@ -38,10 +47,10 @@ write_xdmf <- function(
 	d <- dim(geometry)[2]
 	# number of cells
 	n_cells <- dim(topology)[1]
+	# number of time steps
+	n_t <- length(times)
 	# nodes_per_cell
 	nodes_per_cell <- dim(topology)[2]
-	# capture attributes
-	values <- list(...)
 	
 	# check number of dimensions
 	assert_that(d %in% c(2, 3))
@@ -53,6 +62,7 @@ write_xdmf <- function(
 	# check data types
 	assert_that(is.double(geometry) || is.integer(geometry))
 	assert_that(is.integer(topology))
+	assert_that(is.double(times) || is.integer(times) || is.null(times))
 	
 	# check that topology only references valid nodes
 	assert_that(all(1 <= topology & topology <= n_nodes))
@@ -64,49 +74,188 @@ write_xdmf <- function(
 	# check that all cells are unique
 	assert_that(!anyDuplicated(apply(topology, 1, sort), MARGIN = 2))
 	
-	if (length(values) > 0) {
-		# check that we can differentiate between node and cell attributes
-		assert_that(n_nodes != n_cells)
+	if (n_t > 0) {
+		# check that times are sorted
+		assert_that(!is.unsorted(times))
+	}
+	
+	if (length(node_attributes) > 0) {
 		# check that all attributes are named
-		assert_that(!is.null(names(values)) && !any(names(values) == ""))
+		assert_that(!is.null(names(node_attributes)) && !any(names(node_attributes) == ""))
+		# check that all attribute names are unique
+		assert_that(!anyDuplicated(names(node_attributes)))
 		
-		for (key in names(values)) {
-			value <- values[[key]]
+		for (key in names(node_attributes)) {
+			value <- node_attributes[[key]]
 			
-			assert_that(is.vector(value) || is.matrix(value))
+			assert_that(is.vector(value) || is.matrix(value) || is.array(value))
 			assert_that(is.double(value) || is.integer(value))
 			
-			if (is.matrix(value)) {
-				assert_that(length(dim(values)) == 2)
-				assert_that(dim(value)[1] %in% c(n_nodes, n_cells))
-				
-				# normalize 1-d matrices to vectors
-				if (dim(value)[2] == 1) {
-					value <- as.vector(value)
-					values[key] <- value
-				} else {
-					assert_that(dim(value)[2] == d)
-				}
-			} else if (is.vector(value)) {
-				assert_that(length(value) %in% c(n_nodes, n_cells))
+			n <- if (is.vector(value)) {
+				length(value)
+			} else if (is.matrix(value)) {
+				dim(value)
+			} else if (is.array(value)) {
+				dim(value)
 			}
+			
+			assert_that(n[1] == n_nodes)
+			
+			if (n_t == 0) {
+				# assert_that(is.vector(value) || is.matrix(value) || is.array(value))
+				assert_that(length(n) %in% c(1, 2))
+				
+				if (is.array(value)) {
+					assert_that(length(n) == 2)
+					value <- as.matrix(value)
+				}
+				if (is.matrix(value)) {
+					assert_that(n[2] == d)
+				}
+			} else {
+				assert_that(is.matrix(value) || is.array(value))
+				assert_that(length(n) %in% c(2, 3))
+				
+				if (length(n) == 2) {
+					value <- as.matrix(value)
+				}
+				
+				if (is.matrix(value)) {
+					assert_that(n[2] == n_t)
+				} else if (is.array(value)) {
+					assert_that(n[2] == d)
+					assert_that(n[3] == n_t)
+				}
+			}
+			node_attributes[[key]] <- value
+		}
+	}
+	
+	if (length(cell_attributes) > 0) {
+		# check that all attributes are named
+		assert_that(!is.null(names(cell_attributes)) && !any(names(cell_attributes) == ""))
+		# check that all attribute names are unique
+		assert_that(!anyDuplicated(names(cell_attributes)))
+		
+		for (key in names(cell_attributes)) {
+			value <- cell_attributes[[key]]
+			
+			assert_that(is.vector(value) || is.matrix(value) || is.array(value))
+			assert_that(is.double(value) || is.integer(value))
+			
+			n <- if (is.vector(value)) {
+				length(value)
+			} else if (is.matrix(value)) {
+				dim(value)
+			} else if (is.array(value)) {
+				dim(value)
+			}
+			
+			assert_that(n[1] == n_cells)
+			
+			if (n_t == 0) {
+				# assert_that(is.vector(value) || is.matrix(value) || is.array(value))
+				assert_that(length(n) %in% c(1, 2))
+				
+				if (is.array(value)) {
+					assert_that(length(n) == 2)
+					value <- as.matrix(value)
+				}
+				if (is.matrix(value)) {
+					assert_that(n[2] == d)
+				}
+			} else {
+				assert_that(is.matrix(value) || is.array(value))
+				assert_that(length(n) %in% c(2, 3))
+				
+				if (length(n) == 2) {
+					value <- as.matrix(value)
+				}
+				
+				if (is.matrix(value)) {
+					assert_that(n[2] == n_t)
+				} else if (is.array(value)) {
+					assert_that(n[2] == d)
+					assert_that(n[3] == n_t)
+				}
+			}
+			cell_attributes[[key]] <- value
 		}
 	}
 	
 	# write mesh file
 	hdf_file <- H5File$new(mesh_file, mode = "w")
 	hdf_file$create_group("mesh")
+	
 	hdf_file[["mesh/geometry"]] <- t(geometry)
 	hdf_file[["mesh/topology"]] <- t(topology - 1)
-	hdf_file$create_group("mesh/values")
-	for (key in names(values)) {
-		value <- values[[key]]
-		if (is.matrix(value)) {
-			hdf_file[[glue("mesh/values/{key}")]] <- t(value)
-		} else if (is.vector(value)) {
-			hdf_file[[glue("mesh/values/{key}")]] <- value
+	
+	if (n_t == 0) {
+		if (length(node_attributes) > 0) {
+			hdf_file$create_group("mesh/node_attributes")
+			for (key in names(node_attributes)) {
+				value <- node_attributes[[key]]
+				
+				if (is.vector(value)) {
+					hdf_file[[glue("mesh/node_attributes/{key}")]] <- value
+				} else if (is.matrix(value)) {
+					hdf_file[[glue("mesh/node_attributes/{key}")]] <- t(value)
+				} else if (is.array(value)) {
+					hdf_file[[glue("mesh/node_attributes/{key}")]] <- aperm(value, length(dim(value)):1)
+				}
+			}
+		}
+		
+		if (length(cell_attributes) > 0) {
+			hdf_file$create_group("mesh/cell_attributes")
+			for (key in names(cell_attributes)) {
+				value <- cell_attributes[[key]]
+				
+				if (is.vector(value)) {
+					hdf_file[[glue("mesh/cell_attributes/{key}")]] <- value
+				} else if (is.matrix(value)) {
+					hdf_file[[glue("mesh/cell_attributes/{key}")]] <- t(value)
+				} else if (is.array(value)) {
+					hdf_file[[glue("mesh/cell_attributes/{key}")]] <- aperm(value, length(dim(value)):1)
+				}
+			}
+		}
+	} else {
+		for (i in 1:n_t) {
+			hdf_file$create_group(glue("mesh/{times[i]}"))
+		}
+		
+		if (length(node_attributes) > 0) {
+			for (i in 1:n_t) {
+				hdf_file$create_group(glue("mesh/{times[i]}/node_attributes"))
+				for (key in names(node_attributes)) {
+					value <- node_attributes[[key]]
+					
+					if (is.matrix(value)) {
+						hdf_file[[glue("mesh/{times[i]}/node_attributes/{key}")]] <- as.vector(value[, i])
+					} else if (is.array(value)) {
+						hdf_file[[glue("mesh/{times[i]}/node_attributes/{key}")]] <- aperm(value[,, i])
+					}
+				}
+			}
+		}
+		
+		if (length(cell_attributes) > 0) {
+			for (i in 1:n_t) {
+				hdf_file$create_group(glue("mesh/{times[i]}/cell_attributes"))
+				for (key in names(cell_attributes)) {
+					value <- cell_attributes[[key]]
+					
+					if (is.matrix(value)) {
+						hdf_file[[glue("mesh/{times[i]}/cell_attributes/{key}")]] <- as.vector(value[, i])
+					} else if (is.array(value)) {
+						hdf_file[[glue("mesh/{times[i]}/cell_attributes/{key}")]] <- aperm(value[,, i])
+					}
+				}
+			}
 		}
 	}
+	
 	hdf_file$close_all()
 	
 	# write xdmf file
@@ -147,56 +296,201 @@ write_xdmf <- function(
 		)
 	)
 	
-	xdmf_grid <- list(
-		Geometry = xdmf_geometry,
-		Topology = xdmf_topology
-	)
-	
-	for (key in names(values)) {
-		value <- values[[key]]
-		assert_that(is.vector(value) || is.matrix(value))
+	if (n_t == 0) {
+		xdmf_grid <- list(
+			Geometry = xdmf_geometry,
+			Topology = xdmf_topology
+		)
 		
-		if (is.vector(value)) {
-			n <- length(value)
-		} else if (is.matrix(value)) {
-			n <- dim(value)
-		}
-		
-		assert_that(n[1] == n_nodes || n[1] == n_cells)
-		
-		if (is.matrix(value)) {
-			assert_that(length(n) == 2)
-			assert_that(n[2] == d)
-		}
-		
-		v <- structure(
-			Name = key,
-			AttributeType = case_when(
-				is.vector(value) ~ "Scalar",
-				is.matrix(value) ~ "Vector"
-			),
-			Center = case_when(
-				n[1] == n_nodes ~ "Node",
-				n[1] == n_cells ~ "Cell"
-			),
-			list(
-				DataItem = structure(
-					Format = "HDF",
-					Dimensions = str_c(n, collapse = " "),
-					NumberType = case_when(
-						is.double(value)  ~ "Float",
-						is.integer(value) ~ "Int"
+		for (key in names(node_attributes)) {
+			value <- node_attributes[[key]]
+			
+			n <- if (is.vector(value)) {
+				length(value)
+			} else if (is.matrix(value)) {
+				dim(value)
+			} else if (is.array(value)) {
+				dim(value)
+			}
+			
+			xdmf_grid <- append(
+				xdmf_grid,
+				list(Attribute = structure(
+					Name = key,
+					AttributeType = case_when(
+						is.vector(value) ~ "Scalar",
+						is.matrix(value) ~ "Vector"
 					),
+					Center = "Node",
 					list(
-						glue("{mesh_file}:/mesh/values/{key}")
+						DataItem = structure(
+							Format = "HDF",
+							Dimensions = str_c(n, collapse = " "),
+							NumberType = case_when(
+								is.double(value)  ~ "Float",
+								is.integer(value) ~ "Int"
+							),
+							list(
+								glue("{mesh_file}:/mesh/node_attributes/{key}")
+							)
+						)
+					)
+				))
+			)
+		}
+		
+		for (key in names(cell_attributes)) {
+			value <- cell_attributes[[key]]
+			
+			n <- if (is.vector(value)) {
+				length(value)
+			} else if (is.matrix(value)) {
+				dim(value)
+			} else if (is.array(value)) {
+				dim(value)
+			}
+			
+			xdmf_grid <- append(
+				xdmf_grid,
+				list(Attribute = structure(
+					Name = key,
+					AttributeType = case_when(
+						is.vector(value) ~ "Scalar",
+						is.matrix(value) ~ "Vector"
+					),
+					Center = "Cell",
+					list(
+						DataItem = structure(
+							Format = "HDF",
+							Dimensions = str_c(n, collapse = " "),
+							NumberType = case_when(
+								is.double(value)  ~ "Float",
+								is.integer(value) ~ "Int"
+							),
+							list(
+								glue("{mesh_file}:/mesh/cell_attributes/{key}")
+							)
+						)
+					)
+				))
+			)
+		}
+		
+		xdmf_domain <- list(
+			Grid = structure(
+				Name = "mesh",
+				GridType = "Uniform",
+				xdmf_grid
+			)
+		)
+	} else {
+		xdmf_grids <- list()
+		for (i in 1:n_t) {
+			xdmf_time <- structure(
+				TimeType = "single",
+				Value    = times[i],
+				list()
+			)
+			
+			xdmf_grid <- list(
+				Time     = xdmf_time,
+				Geometry = xdmf_geometry,
+				Topology = xdmf_topology
+			)
+			
+			for (key in names(node_attributes)) {
+				value <- node_attributes[[key]]
+				
+				n <- if (is.vector(value)) {
+					length(value)
+				} else if (is.matrix(value)) {
+					dim(value)
+				} else if (is.array(value)) {
+					dim(value)
+				}
+				
+				xdmf_grid <- append(
+					xdmf_grid,
+					list(Attribute = structure(
+						Name = key,
+						AttributeType = case_when(
+							is.matrix(value) ~ "Scalar",
+							is.array(value)  ~ "Vector"
+						),
+						Center = "Node",
+						list(
+							DataItem = structure(
+								Format     = "HDF",
+								Dimensions = str_c(n[1:(length(n) - 1)], collapse = " "),
+								NumberType = case_when(
+									is.double(value)  ~ "Float",
+									is.integer(value) ~ "Int"
+								),
+								list(
+									glue("{mesh_file}:/mesh/{times[i]}/node_attributes/{key}")
+								)
+							)
+						)
+					))
+				)
+			}
+			
+			for (key in names(cell_attributes)) {
+				value <- cell_attributes[[key]]
+				
+				n <- if (is.vector(value)) {
+					length(value)
+				} else if (is.matrix(value)) {
+					dim(value)
+				} else if (is.array(value)) {
+					dim(value)
+				}
+				
+				xdmf_grid <- append(
+					xdmf_grid,
+					list(Attribute = structure(
+						Name = key,
+						AttributeType = case_when(
+							is.matrix(value) ~ "Scalar",
+							is.array(value)  ~ "Vector"
+						),
+						Center = "Cell",
+						list(
+							DataItem = structure(
+								Format     = "HDF",
+								Dimensions = str_c(n[1:(length(n) - 1)], collapse = " "),
+								NumberType = case_when(
+									is.double(value)  ~ "Float",
+									is.integer(value) ~ "Int"
+								),
+								list(
+									glue("{mesh_file}:/mesh/{times[i]}/cell_attributes/{key}")
+								)
+							)
+						)
+					))
+				)
+			}
+			
+			xdmf_grids <- append(
+				xdmf_grids,
+				list(
+					Grid = structure(
+						Name = glue("mesh {times[i]}"),
+						GridType = "Uniform",
+						xdmf_grid
 					)
 				)
 			)
-		)
+		}
 		
-		xdmf_grid <- append(
-			xdmf_grid,
-			list(Attribute = v)
+		xdmf_domain <- list(
+			Grid = structure(
+				Name = "mesh",
+				GridType = "Collection",
+				CollectionType = "Temporal",
+				xdmf_grids
+			)
 		)
 	}
 	
@@ -205,24 +499,13 @@ write_xdmf <- function(
 			Xdmf = structure(
 				Version = "2.0",
 				list(
-					Domain = list(
-						Grid = structure(
-							Name = "mesh",
-							GridType = "Uniform",
-							xdmf_grid
-						)
-					)
+					Domain = xdmf_domain
 				)
 			)
 		)
 	)
 	
 	write_xml(xdmf, xdmf_file, options = "format")
-	
-	paraview <- Sys.which("paraview")
-	if (open && paraview != "") {
-		system2(paraview, xdmf_file, wait = FALSE)
-	}
 	
 	invisible()
 }

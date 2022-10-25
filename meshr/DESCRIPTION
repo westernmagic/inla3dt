@@ -16,4 +16,4 @@ Imports:
 	dplyr,
 	xml2
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
