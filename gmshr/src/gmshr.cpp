@@ -3,10 +3,11 @@
 #include <unordered_map> // for std::unordered_map
 #include <stdexcept> // for std::length_error, std::domain_error
 #include <string> // for std::string
+// [[Rcpp::depends(BH)]]
 #include <boost/container_hash/hash.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <Rcpp.h>
-#include <gmsh.h>
+#include "gmsh/api/gmsh.h"
 using namespace Rcpp;
 
 // [[Rcpp::export]]
