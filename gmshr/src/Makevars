@@ -1,4 +1,4 @@
-PKG_LIBS = -lgmsh
+PKG_LIBS = -Lgmsh/build -lgmsh
 
 $(SHLIB): gmsh_lib
 

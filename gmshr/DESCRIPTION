@@ -16,6 +16,7 @@ Imports:
 Suggests:
 	geometry
 LinkingTo:
-	Rcpp
+	Rcpp,
+	BH
 Encoding: UTF-8
 RoxygenNote: 7.2.1
