@@ -18,7 +18,7 @@ R --no-save --quiet <<-EOF
 	# Set CRAN Mirror to ETHZ
 	local({
 		r <- getOption("repos")
-		r["CRAN"] <- "https://stat.ethz.ch/CRAN
+		r["CRAN"] <- "https://stat.ethz.ch/CRAN"
 		r["INLA"] <- "https://inla.r-inla-download.org/R/stable"
 		options(repos = r)
 	})
