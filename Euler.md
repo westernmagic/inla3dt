@@ -1,107 +1,172 @@
-```sh
+```bash
+#!/bin/bash
+
+# Unofficial Bash strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# Use new module stack
 env2lmod
-module load \
-	gcc/8.2.0 \
-	git \
-	r \
-	cmake \
-	freetype libpng zlib \
-	fontconfig uuid libxml2 \
-	harfbuzz glib pcre \
-	fribidi \
-	libtiff \
-	libjpeg-turbo \
-	hdf5 libszip \
-	openblas
+# Use newer GCC
+module load gcc/8.2.0
+module load git
+module load r
 
-R --no-save --quiet <<-EOF
-	# Set CRAN Mirror to ETHZ
-	local({
-		r <- getOption("repos")
-		r["CRAN"] <- "https://stat.ethz.ch/CRAN"
-		r["INLA"] <- "https://inla.r-inla-download.org/R/stable"
-		options(repos = r)
-	})
-
-	# Install build dependencies
-	install.packages(c(
-		"devtools",
-		"remotes",
-		"Rcpp",
-		"BH",
-		"BiocManager"
-	))
-
-	BiocManager::install(c(
-		"graph",
-		"Rgraphviz"
-	))
-	
-	install.packages(c(
-		"assertthat",
-		"geometry",
-		"hdf5r",
-		"glue",
-		"dplyr",
-		"xml2",
-		"INLA"
-	))
-
-	remotes::install_github(
-		"finnlindgren/inlamesh3d"
-	)
-	# Currently not working
-	remote::install_github(
-		"eliaskrainski/INLAspacetime"
-	)
-
-	install.packages(c(
-		"tidyverse",
-		"ggplot2"
-	))
-
-	# Install gmshr
-	roxygen2::roxygenize(
-		"gmshr",
-		load_code = function(path) {
-			pkgload::load_all(
-				path,
-				compile         = FALSE,
-				helpers         = FALSE,
-				attach_testthat = FALSE
-			)$env
-		}
-	)
-	Rcpp::compileAttributes("gmshr")
-	devtools::document("gmshr")
-	devtools::build("gmshr")
-	devtools::install("gmshr")
-
-	# Install tetgenr
-	roxygen2::roxygenize(
-		"tetgenr",
-		load_code = function(path) {
-			pkgload::load_all(
-				path,
-				compile         = FALSE,
-				helpers         = FALSE,
-				attach_testthat = FALSE
-			)$env
-		}
-	)
-	Rcpp::compileAttributes("tetgenr")
-	devtools::document("tetgenr")
-	devtools::build("tetgenr")
-	devtools::install("tetgenr")
-	
-	# Install meshr
-	devtools::document("meshr")
-	devtools::build("meshr")
-	devtools::install("meshr")
-
-	# Install inla3dt
-	devtools::document("inla3dt")
-	devtools::build("inla3dt")
-	devtools::install("inla3dt")
+# Create user library
+R --no-save --quiet <<-"EOF"
+    dir.create(
+        path = Sys.getenv("R_LIBS_USER"),
+        showWarnings = FALSE,
+        recursive = TRUE
+    )
 EOF
+# Install renv
+R --no-save --quiet <<-"EOF"
+    install.packages(
+        "renv",
+        repos = c("CRAN" = "https://stat.ethz.ch/CRAN")
+    )
+EOF
+# Initialize renv
+R --no-save --quiet <<-"EOF"
+    renv::init(
+        bare = TRUE,
+        bioconductor = TRUE
+    )
+    renv::snapshot(
+        repos = c(
+            "CRAN" = "https://stat.ethz.ch/CRAN",
+            "INLA" = "https://inla.r-inla-download.org/R/stable"
+        )
+    )
+EOF
+module load \
+    freetype libpng zlib \
+    fontconfig uuid libxml2 \
+    harfbuzz glib pcre \
+    fribidi \
+    libtiff
+R --no-save --quiet <<-"EOF"
+    renv::install("devtools")
+    renv::snapshot()
+EOF
+module unload \
+    freetype libpng zlib \
+    fontconfig uuid libxml2 \
+    harfbuzz glib pcre \
+    fribidi \
+    libtiff
+R --no-save --quiet <<-"EOF"
+    renv::install("Rcpp")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("BH")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("assertthat")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("geometry")
+    renv::snapshot()
+EOF
+module load hdf5 libszip
+R --no-save --quiet <<-"EOF"
+    renv::install("hdf5r")
+    renv::snapshot()
+EOF
+module unload hdf5 libszip
+R --no-save --quiet <<-"EOF"
+    renv::install("glue")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("dplyr")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("xml2")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("INLA")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("finnlindgren/inlamesh3d")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("westernmagic/INLAspacetime")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("tidyverse")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    renv::install("ggplot2")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    roxygen2::roxygenize(
+        "gmshr",
+        load_code = function(path) {
+            pkgload::load_all(
+                path,
+                compile         = FALSE,
+                helpers         = FALSE,
+                attach_testthat = FALSE
+            )$env
+        }
+    )
+    renv::install("./gmshr")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    roxygen2::roxygenize(
+        "tetgenr",
+        load_code = function(path) {
+            pkgload::load_all(
+                path,
+                compile         = FALSE,
+                helpers         = FALSE,
+                attach_testthat = FALSE
+            )$env
+        }
+    )
+    renv::install("./tetgenr")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    devtools::document("meshr")
+    renv::install("./meshr")
+    renv::snapshot()
+EOF
+R --no-save --quiet <<-"EOF"
+    devtools::document("inla3dt")
+    renv::install("./inla3dt")
+    renv::snapshot()
+EOF
+
+# Save loaded modules
+cat > activate.sh <<-"EOF"
+    env2lmod
+    module load \
+        gcc/8.2.0
+        git \
+        r \
+        freetype libpng zlib \
+        fontconfig uuid libxml2 \
+        harfbuzz glib pcre \
+        fribidi \
+        libtiff \
+        hdf5 libszip \
+        cmake
+EOF
+
+echo 'Done!'
+echo 'Remember to `source activate.sh` before executing any commands!'
 ```
