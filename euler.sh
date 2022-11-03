@@ -102,6 +102,11 @@ R --no-save --quiet <<-"EOF"
     renv::install("haven")
     renv::snapshot()
 EOF
+
+R --no-save --quiet <<-"EOF"
+    renv::install("readxl")
+    renv::snapshot()
+EOF
 module load libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("tidyverse")
