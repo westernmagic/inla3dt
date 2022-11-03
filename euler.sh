@@ -97,6 +97,12 @@ R --no-save --quiet <<-"EOF"
     renv::install("westernmagic/INLAspacetime")
     renv::snapshot()
 EOF
+module unload libiconv
+R --no-save --quiet <<-"EOF"
+    renv::install("haven")
+    renv::snapshot()
+EOF
+module load libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("tidyverse")
     renv::snapshot()
