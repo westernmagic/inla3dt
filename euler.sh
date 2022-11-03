@@ -161,7 +161,7 @@ EOF
 cat > activate.sh <<-"EOF"
     env2lmod
     module load \
-        gcc/8.2.0
+        gcc/8.2.0 \
         git \
         r \
         freetype libpng zlib \
