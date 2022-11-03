@@ -1,7 +1,6 @@
 #!/bin/bash -i
 
-# Unofficial Bash strict mode
-set -euo pipefail
+set -eo pipefail
 IFS=$'\n\t'
 
 # Use new module stack
@@ -104,14 +103,19 @@ R --no-save --quiet <<-"EOF"
     renv::install("westernmagic/INLAspacetime")
     renv::snapshot()
 EOF
+module load libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("tidyverse")
     renv::snapshot()
 EOF
+module unload libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("ggplot2")
     renv::snapshot()
 EOF
+module load \
+	libiconv \
+	cmake
 R --no-save --quiet <<-"EOF"
     roxygen2::roxygenize(
         "gmshr",
@@ -127,6 +131,10 @@ R --no-save --quiet <<-"EOF"
     renv::install("./gmshr")
     renv::snapshot()
 EOF
+module unload \
+	libiconv \
+	cmake
+module load libiconv
 R --no-save --quiet <<-"EOF"
     roxygen2::roxygenize(
         "tetgenr",
@@ -152,6 +160,7 @@ R --no-save --quiet <<-"EOF"
     renv::install("./inla3dt")
     renv::snapshot()
 EOF
+module unload libiconv
 
 # Save loaded modules
 cat > activate.sh <<-"EOF"
