@@ -1,5 +1,4 @@
-```bash
-#!/bin/bash
+#!/bin/bash -i
 
 # Unofficial Bash strict mode
 set -euo pipefail
@@ -7,6 +6,7 @@ IFS=$'\n\t'
 
 # Use new module stack
 env2lmod
+
 # Use newer GCC
 module load gcc/8.2.0
 module load git
@@ -45,7 +45,8 @@ module load \
     fontconfig uuid libxml2 \
     harfbuzz glib pcre \
     fribidi \
-    libtiff
+    libtiff \
+    libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("devtools")
     renv::snapshot()
@@ -55,7 +56,8 @@ module unload \
     fontconfig uuid libxml2 \
     harfbuzz glib pcre \
     fribidi \
-    libtiff
+    libtiff \
+    libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("Rcpp")
     renv::snapshot()
@@ -163,10 +165,10 @@ cat > activate.sh <<-"EOF"
         harfbuzz glib pcre \
         fribidi \
         libtiff \
+        libiconv \
         hdf5 libszip \
         cmake
 EOF
 
 echo 'Done!'
 echo 'Remember to `source activate.sh` before executing any commands!'
-```
