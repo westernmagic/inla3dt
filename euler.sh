@@ -7,9 +7,18 @@ IFS=$'\n\t'
 env2lmod
 
 # Use newer GCC
-module load gcc/8.2.0
-module load git
-module load r
+module load \
+    gcc/8.2.0 \
+    git \
+    r \
+    freetype libpng zlib \
+    fontconfig uuid libxml2 \
+    harfbuzz glib pcre \
+    fribidi \
+    libtiff \
+    libiconv \
+    hdf5 libszip \
+    cmake
 
 # Create user library
 R --no-save --quiet <<-"EOF"
@@ -39,24 +48,11 @@ R --no-save --quiet <<-"EOF"
         )
     )
 EOF
-module load \
-    freetype libpng zlib \
-    fontconfig uuid libxml2 \
-    harfbuzz glib pcre \
-    fribidi \
-    libtiff \
-    libiconv
+
 R --no-save --quiet <<-"EOF"
     renv::install("devtools")
     renv::snapshot()
 EOF
-module unload \
-    freetype libpng zlib \
-    fontconfig uuid libxml2 \
-    harfbuzz glib pcre \
-    fribidi \
-    libtiff \
-    libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("Rcpp")
     renv::snapshot()
@@ -73,12 +69,10 @@ R --no-save --quiet <<-"EOF"
     renv::install("geometry")
     renv::snapshot()
 EOF
-module load hdf5 libszip
 R --no-save --quiet <<-"EOF"
     renv::install("hdf5r")
     renv::snapshot()
 EOF
-module unload hdf5 libszip
 R --no-save --quiet <<-"EOF"
     renv::install("glue")
     renv::snapshot()
@@ -103,19 +97,14 @@ R --no-save --quiet <<-"EOF"
     renv::install("westernmagic/INLAspacetime")
     renv::snapshot()
 EOF
-module load libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("tidyverse")
     renv::snapshot()
 EOF
-module unload libiconv
 R --no-save --quiet <<-"EOF"
     renv::install("ggplot2")
     renv::snapshot()
 EOF
-module load \
-	libiconv \
-	cmake
 R --no-save --quiet <<-"EOF"
     roxygen2::roxygenize(
         "gmshr",
@@ -131,10 +120,6 @@ R --no-save --quiet <<-"EOF"
     renv::install("./gmshr")
     renv::snapshot()
 EOF
-module unload \
-	libiconv \
-	cmake
-module load libiconv
 R --no-save --quiet <<-"EOF"
     roxygen2::roxygenize(
         "tetgenr",
@@ -160,7 +145,6 @@ R --no-save --quiet <<-"EOF"
     renv::install("./inla3dt")
     renv::snapshot()
 EOF
-module unload libiconv
 
 # Save loaded modules
 cat > activate.sh <<-"EOF"
