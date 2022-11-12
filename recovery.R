@@ -5,10 +5,10 @@ library(ggplot2)
 # devtools::install_github("eliaskrainski/INLAspacetime")
 library(INLAspacetime)
 # devtools::install_github("statguy/SpaceTimeModels")
-devtools::document("meshr")
-devtools::load_all("meshr", export_all = FALSE)
-devtools::document("inla3dt")
-devtools::load_all("inla3dt", export_all = FALSE)
+# devtools::install("meshr")
+library(meshr)
+# devtools::install("inla3dt")
+library(inla3dt)
 
 # Setup domain
 ## Spatial domain: a cube
