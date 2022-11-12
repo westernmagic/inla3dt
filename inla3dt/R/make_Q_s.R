@@ -38,6 +38,6 @@ make_Q_s <- function(fem, kappa, order) {
 	fem$g0 <- fem$c0
 	
 	reduce(sapply(0:order, function(i) {
-		choose(order, i) * kappa^(2 * (i - order)) * fem[[glue("g{i}")]]
+		choose(order, i) * kappa^(2 * (order - i)) * fem[[glue("g{i}")]]
 	}), `+`)
 }
