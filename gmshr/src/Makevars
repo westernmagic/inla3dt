@@ -1,23 +1,36 @@
 PKG_LIBS = -Lgmsh/build -lgmsh
 
-$(SHLIB): gmsh_lib
+$(SHLIB): gmsh/build/libgmsh.a
 
-gmsh_lib:
+gmsh/build/libgmsh.a:
 	(\
-		cd gmsh; \
-		mkdir build; \
-		cd build; \
+		mkdir -p gmsh/build && \
+		cd gmsh/build && \
 		CC="$(CC)" \
 		CXX="$(CXX)" \
 		CFLAGS="$(CFLAGS)" \
 		CXXFLAGS="$(CXXFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" \
 		cmake \
-			-D ENABLE_BUILD_LIB:bool=ON \
+			-G "Unix Makefiles" \
 			-D CMAKE_BUILD_TYPE=Release \
-			-D CMAKE_SHARED_LIBS:bool=OFF \
 			-D CMAKE_POSITION_INDEPENDENT_CODE:bool=ON \
+			-D DEFAULT:bool=OFF \
+			-D ENABLE_ALGLIB:bool=ON \
+			-D ENABLE_BAMG:bool=ON \
+			-D ENABLE_BUILD_LIB:bool=ON \
+			-D ENABLE_CAIRO:bool=OFF \
+			-D ENABLE_CGNS:bool=OFF \
+			-D ENABLE_FLTK:bool=OFF \
+			-D ENABLE_KBIPACK:bool=OFF \
+			-D ENABLE_MED:bool=OFF \
+			-D ENABLE_MESH:bool=ON \
+			-D ENABLE_MMG:bool=ON \
+			-D ENABLE_OCC:bool=OFF \
+			-D ENABLE_ONELAB:bool=OFF \
+			-D ENABLE_OPENMP:bool=ON \
+			-D ENABLE_TESTS:bool=OFF \
 			.. \
-		; \
-		cmake --build .; \
+		&& \
+		$(MAKE) lib \
 	)
