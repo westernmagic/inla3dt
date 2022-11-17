@@ -1,3 +1,6 @@
 [submodule "gmshr/src/gmsh"]
 	path = gmshr/src/gmsh
 	url = https://gitlab.onelab.info/gmsh/gmsh.git
+[submodule "INLAspacetime"]
+	path = INLAspacetime
+	url = git@github.com:westernmagic/INLAspacetime.git
