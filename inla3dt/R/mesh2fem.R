@@ -62,3 +62,8 @@ mesh2fem <- function(mesh, order = 2L) {
 	
 	fem
 }
+
+#' @exportS3Method inlamesh3d::inla.mesh.fem
+inla.mesh.fem.inla_mesh_3d <- function(mesh, ...) {
+	mesh2fem(mesh, ...)
+}
