@@ -43,9 +43,9 @@ damf_121_rgeneric <- function(
 			spatial_fem,
 			temporal_fem,
 			interpretable2spde(
-				range_t = theta[1],
-				range_s = theta[2],
-				sigma   = theta[3],
+				range_t = exp(theta[1]),
+				range_s = exp(theta[2]),
+				sigma   = exp(theta[3]),
 				d       = spatial_d
 			)$gamma
 		)

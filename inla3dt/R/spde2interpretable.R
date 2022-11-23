@@ -6,12 +6,14 @@
 #'   Optional.
 #' @param gamma
 #'   Optional.
+#' @param d
+#'   The dimensionality
 #' @param alpha
 #'   A vector \eqn{\alpha = (\alpha_{t}, \alpha_{s}, \alpha_{e})}
 #' @importFrom assertthat assert_that
 #'
 #' @export
-spde2interpretable <- function(theta, gamma, alpha = c(t = 1, s = 2, e = 1)) {
+spde2interpretable <- function(theta, gamma, d, alpha = c(t = 1, s = 2, e = 1)) {
 	# alpha
 	assert_that(!is.null(alpha))
 	assert_that(is.vector(alpha))
@@ -46,10 +48,6 @@ spde2interpretable <- function(theta, gamma, alpha = c(t = 1, s = 2, e = 1)) {
 			names(theta) <- c("t", "s", "e")
 		}
 		theta <- as.list(theta)
-		# TODO: check
-		# assert_that(theta$t > 0)
-		# assert_that(theta$s > 0)
-		# assert_that(theta$e > 0)
 	}
 	
 	# gamma
@@ -69,30 +67,29 @@ spde2interpretable <- function(theta, gamma, alpha = c(t = 1, s = 2, e = 1)) {
 		names(gamma) <- c("t", "s", "e")
 	}
 	gamma <- as.list(gamma)
+	assert_that(gamma$t > 0)
+	assert_that(gamma$s > 0)
+	assert_that(gamma$e > 0)
 	
-	# transformations
-	# page 17, paragraph after equation (16)
+	# section 3, subsection 2, proposition 1, page 9
 	alpha$alpha <- alpha$e + alpha$s * (alpha$t - 0.5)
-	assert_that(alpha$alpha > 1)
+	assert_that(alpha$alpha > (d / 2))
 	
 	nu <- list()
-	# proposition 3.1
-	nu$s <- alpha$alpha - 1
-	# proposition 3.2
+	# section 3, subsection 2, proposition 1, page 9
+	nu$s <- alpha$alpha - d / 2
+	# section 3, subsection 2, proposition 2, page 9
 	nu$t <- min(alpha$t - 0.5, nu$s / alpha$s)
 	
-	# equation (19), using factor from equation (17)
-	# TODO: @Lisa check what is correct
-	c_1 <- (
-		(base::gamma(alpha$t - 0.5) * base::gamma(alpha$alpha - 1)) /
-		(base::gamma(alpha$t)       * base::gamma(alpha$alpha) * 8 * pi^1.5)
-	)
+	# section 3, subsection 2, equation 16
+	c_s <- base::gamma(nu$s) / (base::gamma(alpha$alpha) * (4 * pi)^(d / 2))
+	c_t <- base::gamma(nu$t) / (base::gamma(alpha$t)     * (4 * pi)^0.5    )
+	
+	# section 3, subsection 2, subsubsection 2, equation 19
 	# equation (20), resp. (17)
-	sigma <- gamma$e^-1 * c_1^0.5 * gamma$t^-0.5 * gamma$s^-(alpha$alpha - 1)
-	# equation (21)
-	# equation (22)
-	range_s <- gamma$s^-1 * sqrt(8 * nu$s)
-	range_t <- gamma$t * sqrt(8 * (alpha$t - 0.5)) * gamma$s^-alpha$s
+	sigma <- c_t^0.5 * c_s^0.5 * gamma$t^-0.5 * gamma$e^-1 * gamma$s^-nu$s
+	range_s <- gamma$s^-1 * (8 * nu$s)^0.5
+	range_t <- gamma$t * gamma$s^-alpha$s * (8 * nu$t)^0.5
 	
 	c(
 		sigma   = sigma,

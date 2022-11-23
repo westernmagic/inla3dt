@@ -27,12 +27,12 @@ temporal_domain <- c(0, 1)
 
 # Set parameters
 ## Number of timesteps
-nt <- 5
+nt <- 2
 ## Temporal Range
-range_t_0 <- 0.5
+range_t_0 <- 1
 range_t_prior <- 0.8
 ## Spatial Range
-range_s_0 <- 0.25
+range_s_0 <- 1
 range_s_prior <- 0.8
 ## Sigma
 sigma_0 <- 0.1
@@ -97,18 +97,12 @@ model <- inla.rgeneric.define(
 Q <- inla.rgeneric.q(
 	rmodel = model,
 	cmd    = "Q",
-	theta  = c(
+	theta  = log(c(
 		range_t_0,
 		range_s_0,
 		sigma_0
-	)
+	))
 )
-
-# Q <- make_Q(
-# 	spatial_fem,
-# 	temporal_fem,
-# 	interpretable2spde(sigma = sigma_0, range_s = range_s_0, range_t = range_t_0, d = 3)$gamma
-# )
 
 # Take a sample from the precision matrix
 x <- inla.qsample(1, Q)[, 1]
@@ -156,4 +150,111 @@ est <- inla(
 	# inla.mode         = "experimental",
 	control.inla      = list(int.strategy = "eb"),
 	verbose           = TRUE
+)
+
+# Convert parameters back to interpretable scale
+hyperparam <- est$summary.hyperpar[, c("0.025quant", "0.5quant", "0.975quant")] %>%
+	as.data.frame() %>%
+	rownames_to_column('var') %>%
+	as_tibble() %>%
+	mutate(
+		var = case_when(
+			var == 'Precision for the Gaussian observations' ~ 'sd',
+			var == 'Theta1 for field'                        ~ 'theta_t',
+			var == 'Theta2 for field'                        ~ 'theta_s',
+			var == 'Theta3 for field'                        ~ 'theta_e',
+		)
+	) %>%
+	rename(
+		q_0.025 = `0.025quant`,
+		q_0.5   = `0.5quant`,
+		q_0.975 = `0.975quant`
+	) %>%
+	pivot_longer(-var) %>%
+	pivot_wider(names_from = var, values_from = value) %>%
+	rowwise() %>%
+	transmute(
+		quantile = name,
+		sd       = sd^-0.5,
+		range_t  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_t"],
+		range_s  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_s"],
+		sigma    = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["sigma"]
+	) %>%
+	ungroup() %>%
+	pivot_longer(-quantile) %>%
+	group_by(name) %>%
+	arrange(name, value) %>%
+	mutate(
+		quantile = c("q_0.025", "q_0.5", "q_0.975")
+	) %>%
+	ungroup() %>%
+	pivot_wider(names_from = quantile, values_from = value) %>%
+	mutate(
+		true = case_when(
+			name == "sd"      ~ sd_0,
+			name == "range_t" ~ range_t_0,
+			name == "range_s" ~ range_s_0,
+			name == "sigma"   ~ sigma_0
+		)
+	) %>%
+	mutate(
+		recovered = q_0.025 <= true & true <= q_0.975
+	)
+eta <- est$summary.linear.predictor %>%
+	rownames_to_column("var") %>%
+	as_tibble() %>%
+	mutate(
+		kind = case_when(
+			str_detect(var, "^APredictor\\.") ~ "A",
+			str_detect(var, "^Predictor\\.")  ~ "meshpoint"
+		) %>% as.factor(),
+		index = var %>% str_remove("^\\w+\\.") %>% as.integer()
+	) %>%
+	select(
+		kind,
+		index,
+		mean,
+		sd,
+		q_0.025 = `0.025quant`,
+		q_0.5   = `0.5quant`,
+		q_0.975 = `0.975quant`,
+		d_kl    = kld
+	) %>%
+	filter(kind == "meshpoint") %>%
+	arrange(index)
+
+field <- est$summary.random$field %>%
+	as_tibble() %>%
+	select(
+		index = ID,
+		mean,
+		sd,
+		q_0.025 = `0.025quant`,
+		q_0.5   = `0.5quant`,
+		q_0.975 = `0.975quant`,
+		d_kl    = kld
+	) %>%
+	mutate(index = as.integer(index))
+
+write_xdmf(
+	'recovery_3dt.h5',
+	'recovery_3dt.xdmf',
+	geometry        = spatial_mesh$loc,
+	topology        = spatial_mesh$graph$tv,
+	times           = temporal_mesh$loc,
+	node_attributes = list(
+		observed      = matrix(rep(as.integer((1:nrow(spatial_mesh$loc)) %in% i), temporal_mesh$n), spatial_mesh$n, temporal_mesh$n),
+		eta_mean      = matrix(eta$mean,      spatial_mesh$n, temporal_mesh$n),
+		eta_sd        = matrix(eta$sd,        spatial_mesh$n, temporal_mesh$n),
+		eta_q_0.025   = matrix(eta$q_0.025,   spatial_mesh$n, temporal_mesh$n),
+		eta_q_0.5     = matrix(eta$q_0.5,     spatial_mesh$n, temporal_mesh$n),
+		eta_q_0.975   = matrix(eta$q_0.975,   spatial_mesh$n, temporal_mesh$n),
+		eta_d_kl      = matrix(eta$d_kl,      spatial_mesh$n, temporal_mesh$n),
+		field_mean    = matrix(field$mean,    spatial_mesh$n, temporal_mesh$n),
+		field_sd      = matrix(field$sd,      spatial_mesh$n, temporal_mesh$n),
+		field_q_0.025 = matrix(field$q_0.025, spatial_mesh$n, temporal_mesh$n),
+		field_q_0.5   = matrix(field$q_0.5,   spatial_mesh$n, temporal_mesh$n),
+		field_q_0.975 = matrix(field$q_0.975, spatial_mesh$n, temporal_mesh$n),
+		field_d_kl    = matrix(field$d_kl,    spatial_mesh$n, temporal_mesh$n)
+	)
 )
