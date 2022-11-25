@@ -87,10 +87,16 @@ temporal_fem <- mesh2fem(temporal_mesh)
 
 # Model
 model <- inla.rgeneric.define(
-	model        = damf_121_rgeneric,
-	spatial_fem  = spatial_fem,
-	temporal_fem = temporal_fem,
-	spatial_d    = 3
+	model         = damf_121_rgeneric,
+	spatial_fem   = spatial_fem,
+	temporal_fem  = temporal_fem,
+	spatial_d     = 3,
+	range_t_0     = range_t_0,
+	range_t_prior = range_t_prior,
+	range_s_0     = range_s_0,
+	range_s_prior = range_s_prior,
+	sigma_0       = sigma_0,
+	sigma_prior   = sigma_prior
 )
 
 # Get precision matrix

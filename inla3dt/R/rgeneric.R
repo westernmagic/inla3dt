@@ -64,7 +64,15 @@ damf_121_rgeneric <- function(
 	}
 	
 	log.prior <- function(...) {
-		# TODO
+		lambda_t <- -log(range_t_prior) / range_t_0
+		lambda_s <- -log(range_s_prior) / range_s_0
+		lambda_e <- -log(sigma_prior)   / sigma_0
+		
+		(
+			  log(lambda_t) - 1         / 2 * theta[1] - lambda_t * exp(-1         / 2 * theta[1]) + log(1         / 2)
+			+ log(lambda_s) - spatial_d / 2 * theta[2] - lambda_s * exp(-spatial_d / 2 * theta[2]) + log(spatial_d / 2)
+			+ log(lambda_e) +                 theta[3] - lambda_e * exp(                 theta[3])
+		)
 	}
 	
 	quit <- function(...) {
