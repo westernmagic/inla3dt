@@ -95,9 +95,9 @@ model <- make_model_121(
 	range_s_prior = range_s_prior,
 	sigma_0       = sigma_0,
 	sigma_prior   = sigma_prior,
-	mode          = "cgeneric",
+	mode          = "cgeneric",
 	debug         = FALSE,
-	verbose       = FALSE
+	verbose       = TRUE
 )
 
 # Get precision matrix

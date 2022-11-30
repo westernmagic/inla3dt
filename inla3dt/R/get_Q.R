@@ -15,7 +15,7 @@ get_Q <- function(
 	assert_that(inherits(model, c("inla.cgeneric", "inla.rgeneric")))
 	
 	if (inherits(model, "inla.cgeneric")) {
-		inla.cgeneric.q(model)
+		inla.cgeneric.q(model)$Q
 	} else if (inherits(model, "inla.rgeneric")) {
 		inla.rgeneric.q(model, "Q", theta)
 	}
