@@ -1,7 +1,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom assertthat is.scalar
 #' @export
-damf_121_rgeneric <- function(
+demf_121_rgeneric <- function(
 	cmd = c(
 		"graph",
 		"Q",

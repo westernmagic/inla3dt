@@ -12,6 +12,7 @@ Imports:
 	INLA,
 	inlamesh3d,
 	glue,
-	purrr
+	purrr,
+	dplyr
 Encoding: UTF-8
 RoxygenNote: 7.2.1

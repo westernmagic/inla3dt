@@ -86,24 +86,24 @@ spatial_fem <- mesh2fem(spatial_mesh, order = 3L)
 temporal_fem <- mesh2fem(temporal_mesh)
 
 # Model
-model <- inla.rgeneric.define(
-	model         = damf_121_rgeneric,
-	spatial_fem   = spatial_fem,
-	temporal_fem  = temporal_fem,
-	spatial_d     = 3,
+model <- make_model_121(
+	spatial_mesh  = spatial_mesh,
+	temporal_mesh = temporal_mesh,
 	range_t_0     = range_t_0,
 	range_t_prior = range_t_prior,
 	range_s_0     = range_s_0,
 	range_s_prior = range_s_prior,
 	sigma_0       = sigma_0,
-	sigma_prior   = sigma_prior
+	sigma_prior   = sigma_prior,
+	mode          = "cgeneric",
+	debug         = FALSE,
+	verbose       = FALSE
 )
 
 # Get precision matrix
-Q <- inla.rgeneric.q(
-	rmodel = model,
-	cmd    = "Q",
-	theta  = log(c(
+Q <- get_Q(
+	model,
+	theta = log(c(
 		range_t_0,
 		range_s_0,
 		sigma_0
@@ -153,6 +153,8 @@ est <- inla(
 	control.compute   = list(graph = TRUE, dic = TRUE),
 	control.predictor = list(A = inla.stack.A(stack), compute = TRUE),
 	control.mode      = list(theta = theta_0 + 0.5, restart = TRUE),
+	# TODO: @Lisa check noise prior passed correctly?
+	control.family    = list(hyper = list(theta = list(prior = "pc.prec", param = c(sigma_0, sigma_prior)))),
 	# inla.mode         = "experimental",
 	control.inla      = list(int.strategy = "eb"),
 	verbose           = TRUE
