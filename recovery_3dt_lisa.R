@@ -4,7 +4,7 @@ library(tidyverse)
 library(ggplot2)
 library(assertthat)
 # devtools::install_github("eliaskrainski/INLAspacetime")
-library(INLAspacetime)
+library(INLAspacetime, lib.loc="./local_packages")
 # devtools::install("meshr")
 library(meshr)
 # devtools::install("inla3dt")
@@ -22,25 +22,29 @@ spatial_domain <- rbind(
 	c(1, 1, 0),
 	c(1, 1, 1)
 )
-## Temporal domain: a line
-temporal_domain <- c(0, 1)
 
 # Set parameters
 ## Number of timesteps
-nt <- 3
+nt <- 5
+
+## Temporal domain: a line
+#temporal_domain <- c(0, 1)
+temporal_domain <- c(0, nt)
+
+
 ## Temporal Range
-range_t_0 <- 0.8
+range_t_0 <- 1.5 ##nt/2
 range_t_prior <- 0.5
 ## Spatial Range
 range_s_0 <- 0.5
 range_s_prior <- 0.5
 ## Sigma
-sigma_0 <- 2
+sigma_0 <- 1
 sigma_prior <- 0.5
 ## Noise (nugget) standard deviation
 sd_0 <- 0.1
 ## Observation / mesh point ratio
-obs_ratio <- 1
+obs_ratio <- 1.0
 
 # Parameter Assertions
 invisible(assert_that(1 <= nt))
@@ -85,33 +89,69 @@ spatial_fem <- mesh2fem(spatial_mesh, order = 3L)
 ## Temporal
 temporal_fem <- mesh2fem(temporal_mesh)
 
+x <- inla.qsample(1, temporal_fem$c0)[, 1]
+print("summary(temporal_fem$c0)")
+print(summary(x))
+
+x <- inla.qsample(1, temporal_fem$c1)[, 1]
+print("summary(temporal_fem$c1)")
+print(summary(x))
+
+x <- inla.qsample(1, temporal_fem$g1)[, 1]
+print("summary(temporal_fem$g1)")
+print(summary(x))
+
+
 # Model
-model <- inla.rgeneric.define(
-	model         = damf_121_rgeneric,
-	spatial_fem   = spatial_fem,
-	temporal_fem  = temporal_fem,
-	spatial_d     = 3,
+model <- make_model_121(
+	spatial_mesh  = spatial_mesh,
+	temporal_mesh = temporal_mesh,
 	range_t_0     = range_t_0,
 	range_t_prior = range_t_prior,
 	range_s_0     = range_s_0,
 	range_s_prior = range_s_prior,
 	sigma_0       = sigma_0,
-	sigma_prior   = sigma_prior
+	sigma_prior   = sigma_prior,
+	mode          = "cgeneric",
+	##verbose       = TRUE,
+	debug         = FALSE
 )
 
+### Problem: in get_Q() theta is not passed on as input
+# was always using same default parameters
+
 # Get precision matrix
-Q <- inla.rgeneric.q(
-	rmodel = model,
-	cmd    = "Q",
-	theta  = log(c(
-		range_t_0,
-		range_s_0,
-		sigma_0
-	))
-)
+#Q <- get_Q(
+#	model,
+#	theta = log(c(
+#		range_t_0,
+#		range_s_0,
+#		sigma_0
+#	))
+#)
+
+# use instead:
+gamma_param <- interpretable2spde(sigma_0, range_s_0, range_t_0, 3)$gamma
+
+print("gamma param")
+print(gamma_param)
+Q <- make_Q(spatial_fem, temporal_fem, gamma_param)
+
+#jpeg(file="Qprior.jpeg")
+#image(Q)
+#dev.off()
 
 # Take a sample from the precision matrix
 x <- inla.qsample(1, Q)[, 1]
+print("summary(x)")
+print(summary(x))
+
+# shouldn't be necessary, you can try without it
+x = mean(x) - x
+
+print("summary(x)")
+print(summary(x))
+
 invisible(assert_that(min(x) <= 0 && 0 <= max(x)))
 
 # Define a subset of locations for simulating observations
@@ -133,44 +173,96 @@ A <- INLA::inla.spde.make.A(
 	zapsmall() %>%
 	drop0()
 
+jpeg(file="A.jpeg")
+image(A)
+dev.off()
+
 # Generate noisy observations
 y <- as.vector(A %*% x) + rnorm(nrow(loc) * temporal_mesh$n, sd = sd_0)
 
 # Stack data for INLA
+# previous effects call generating incorrect matrix for A (separate space & time call is for separable models)
 stack <- inla.stack(
-	data          = list(y = y),
-	A             = list(A),
-	effects       = list(inla.spde.make.index('field', n.spde = nrow(spatial_mesh$loc), n.group = temporal_mesh$n)),
-	compress      = FALSE,
-	remove.unused = FALSE
+        data          = list(y = y),
+        A             = list(A),
+###     effects       = list(inla.spde.make.index('field', n.spde = nrow(spatial_mesh$loc), n.group = temporal_mesh$n)),
+        effects       = list(field=1:ncol(A)),
+        compress      = FALSE,
+        remove.unused = FALSE
 )
 
-theta_0 <- log(c(sd_0^-2, range_t_0, range_s_0, sigma_0))
+theta_0 <- log(c(sd_0^-2, range_s_0,range_t_0, sigma_0))
 
 est <- inla(
 	y ~ -1 + f(field, model = model),
 	data              = inla.stack.data(stack),
-	# , graph = TRUE, dic = TRUE
-	control.compute   = list(config=TRUE), keep = TRUE,
+	#control.compute   = list(graph = TRUE, dic = TRUE),
+	control.compute   =list(config=TRUE), keep=TRUE,
 	control.predictor = list(A = inla.stack.A(stack), compute = TRUE),
 	control.mode      = list(theta = theta_0 + 0.5, restart = TRUE),
-	# inla.mode         = "experimental",
+	# updated to contain noise observations not sigma_0
+	control.family    = list(hyper = list(theta = list(prior = "pc.prec", param = c(sd_0^-2, 0.5)))),
+	#inla.mode         = "experimental",
 	control.inla      = list(int.strategy = "eb"),
 	verbose           = TRUE
 )
 
+## check output, compute comparisons
+gamma_0 <- interpretable2spde(sigma_0, range_s_0, range_t_0, 3)$gamma
 
-Q_priorInla <- est$misc$configs$config[[1]]$Qprior
-theta_inla  <- est$summary.hyperpar$mean[2:4]
+QpriorINLA <- est$misc$configs$config[[1]]$Qprior
+QpriorINLA[1:10,1:10]
 
-Q_self <- inla.rgeneric.q(
-	rmodel = model,
-	cmd    = "Q",
-	theta  = theta_inla
-)
+cat("summary(diag(QpriorINLA))")
+print(summary(diag(QpriorINLA)))
 
-print("max(Q_priorInla - Q_self)")
-print(max(Q_priorInla - Q_self))
+theta_INLA <- est$misc$configs$config[[1]]$theta
+expThetaINLA <- exp(theta_INLA)
+
+gamma_paramINLA <- interpretable2spde(expThetaINLA[4], expThetaINLA[2], expThetaINLA[3], 3)$gamma
+
+names(gamma_paramINLA) <- c("t", "s", "e")
+Qprior <- make_Q(spatial_fem, temporal_fem, gamma_paramINLA)
+
+cat("summary(diag(Qprior))")
+print(summary(diag(Qprior)))
+
+Qxy_INLA <- est$misc$configs$config[[1]]$Q
+Qxy_INLA[1:10,1:10]
+
+cat("summary(diag(Qxy_INLA))")
+print(summary(diag(Qxy_INLA)))
+
+Qxy = Qprior + exp(theta_INLA[1])*t(A) %*% A
+
+cat("summary(diag(Qxy))")
+print(summary(diag(Qxy)))
+
+Qdiff = Qxy - Qprior;
+print(summary(diag(Qdiff)))
+
+Qdiff_INLA = Qxy_INLA - QpriorINLA;
+print(summary(diag(Qdiff_INLA)))
+
+
+#jpeg(file="Qdiff_INLA.jpeg")
+#image(Qdiff_INLA)
+#dev.off()
+
+#jpeg(file="QpriorINLA.jpeg")
+#image(QpriorINLA)
+#dev.off()
+
+cat("gamma_0    :", c(exp(theta_0[1]), gamma_0), "\n")
+cat("gamma INLA :", c(exp(theta_INLA[1]), gamma_paramINLA), "\n")
+
+
+cat("theta_0    : ", theta_0, "\n")
+cat("theta INLA : ", t(theta_INLA), "\n")
+
+cat("exp(theta_0)    : ", theta_0, "\n")
+cat("exp(theta INLA) : ", t(theta_INLA), "\n")
+
 
 
 # Convert parameters back to interpretable scale
