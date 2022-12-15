@@ -102,12 +102,7 @@ model <- make_model_121(
 
 # Get precision matrix
 Q <- get_Q(
-	model,
-	theta = log(c(
-		range_t_0,
-		range_s_0,
-		sigma_0
-	))
+	model
 )
 
 # Take a sample from the precision matrix
