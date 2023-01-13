@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Xdmf Version="2.0">
+  <Domain>
+    <Grid Name="mesh" GridType="Collection" CollectionType="Temporal">
+      <Grid Name="mesh 0" GridType="Uniform">
+        <Time TimeType="single" Value="0"/>
+        <Geometry Type="XYZ">
+          <DataItem Format="HDF" Dimensions="367 3" NumberType="Float">recovery_3dt.h5:/mesh/geometry</DataItem>
+        </Geometry>
+        <Topology TopologyType="Tetrahedron">
+          <DataItem Format="HDF" Dimensions="1196 4" NumberType="Int">recovery_3dt.h5:/mesh/topology</DataItem>
+        </Topology>
+        <Attribute Name="observed" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Int">recovery_3dt.h5:/mesh/0/node_attributes/observed</DataItem>
+        </Attribute>
+        <Attribute Name="x" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/x</DataItem>
+        </Attribute>
+        <Attribute Name="eta_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_mean</DataItem>
+        </Attribute>
+        <Attribute Name="eta_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_sd</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="eta_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/eta_d_kl</DataItem>
+        </Attribute>
+        <Attribute Name="field_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_mean</DataItem>
+        </Attribute>
+        <Attribute Name="field_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_sd</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="field_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0/node_attributes/field_d_kl</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh 0.25" GridType="Uniform">
+        <Time TimeType="single" Value="0.25"/>
+        <Geometry Type="XYZ">
+          <DataItem Format="HDF" Dimensions="367 3" NumberType="Float">recovery_3dt.h5:/mesh/geometry</DataItem>
+        </Geometry>
+        <Topology TopologyType="Tetrahedron">
+          <DataItem Format="HDF" Dimensions="1196 4" NumberType="Int">recovery_3dt.h5:/mesh/topology</DataItem>
+        </Topology>
+        <Attribute Name="observed" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Int">recovery_3dt.h5:/mesh/0.25/node_attributes/observed</DataItem>
+        </Attribute>
+        <Attribute Name="x" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/x</DataItem>
+        </Attribute>
+        <Attribute Name="eta_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_mean</DataItem>
+        </Attribute>
+        <Attribute Name="eta_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_sd</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="eta_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/eta_d_kl</DataItem>
+        </Attribute>
+        <Attribute Name="field_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_mean</DataItem>
+        </Attribute>
+        <Attribute Name="field_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_sd</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="field_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.25/node_attributes/field_d_kl</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh 0.5" GridType="Uniform">
+        <Time TimeType="single" Value="0.5"/>
+        <Geometry Type="XYZ">
+          <DataItem Format="HDF" Dimensions="367 3" NumberType="Float">recovery_3dt.h5:/mesh/geometry</DataItem>
+        </Geometry>
+        <Topology TopologyType="Tetrahedron">
+          <DataItem Format="HDF" Dimensions="1196 4" NumberType="Int">recovery_3dt.h5:/mesh/topology</DataItem>
+        </Topology>
+        <Attribute Name="observed" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Int">recovery_3dt.h5:/mesh/0.5/node_attributes/observed</DataItem>
+        </Attribute>
+        <Attribute Name="x" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/x</DataItem>
+        </Attribute>
+        <Attribute Name="eta_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_mean</DataItem>
+        </Attribute>
+        <Attribute Name="eta_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_sd</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="eta_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/eta_d_kl</DataItem>
+        </Attribute>
+        <Attribute Name="field_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_mean</DataItem>
+        </Attribute>
+        <Attribute Name="field_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_sd</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="field_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.5/node_attributes/field_d_kl</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh 0.75" GridType="Uniform">
+        <Time TimeType="single" Value="0.75"/>
+        <Geometry Type="XYZ">
+          <DataItem Format="HDF" Dimensions="367 3" NumberType="Float">recovery_3dt.h5:/mesh/geometry</DataItem>
+        </Geometry>
+        <Topology TopologyType="Tetrahedron">
+          <DataItem Format="HDF" Dimensions="1196 4" NumberType="Int">recovery_3dt.h5:/mesh/topology</DataItem>
+        </Topology>
+        <Attribute Name="observed" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Int">recovery_3dt.h5:/mesh/0.75/node_attributes/observed</DataItem>
+        </Attribute>
+        <Attribute Name="x" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/x</DataItem>
+        </Attribute>
+        <Attribute Name="eta_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_mean</DataItem>
+        </Attribute>
+        <Attribute Name="eta_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_sd</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="eta_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/eta_d_kl</DataItem>
+        </Attribute>
+        <Attribute Name="field_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_mean</DataItem>
+        </Attribute>
+        <Attribute Name="field_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_sd</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="field_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/0.75/node_attributes/field_d_kl</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh 1" GridType="Uniform">
+        <Time TimeType="single" Value="1"/>
+        <Geometry Type="XYZ">
+          <DataItem Format="HDF" Dimensions="367 3" NumberType="Float">recovery_3dt.h5:/mesh/geometry</DataItem>
+        </Geometry>
+        <Topology TopologyType="Tetrahedron">
+          <DataItem Format="HDF" Dimensions="1196 4" NumberType="Int">recovery_3dt.h5:/mesh/topology</DataItem>
+        </Topology>
+        <Attribute Name="observed" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Int">recovery_3dt.h5:/mesh/1/node_attributes/observed</DataItem>
+        </Attribute>
+        <Attribute Name="x" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/x</DataItem>
+        </Attribute>
+        <Attribute Name="eta_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_mean</DataItem>
+        </Attribute>
+        <Attribute Name="eta_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_sd</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="eta_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="eta_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/eta_d_kl</DataItem>
+        </Attribute>
+        <Attribute Name="field_mean" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_mean</DataItem>
+        </Attribute>
+        <Attribute Name="field_sd" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_sd</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.025" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_q_0.025</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.5" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_q_0.5</DataItem>
+        </Attribute>
+        <Attribute Name="field_q_0.975" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_q_0.975</DataItem>
+        </Attribute>
+        <Attribute Name="field_d_kl" AttributeType="Scalar" Center="Node">
+          <DataItem Format="HDF" Dimensions="367" NumberType="Float">recovery_3dt.h5:/mesh/1/node_attributes/field_d_kl</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

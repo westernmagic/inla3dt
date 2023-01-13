@@ -27,20 +27,21 @@ temporal_domain <- c(0, 1)
 
 # Set parameters
 ## Number of timesteps
-nt <- 2
+nt <- 5
 ## Temporal Range
-range_t_0 <- 1
-range_t_prior <- 0.8
+range_t_0 <- 0.3
+range_t_prior <- 0.5
 ## Spatial Range
-range_s_0 <- 1
-range_s_prior <- 0.8
+range_s_0 <- 0.5
+range_s_prior <- 0.5
 ## Sigma
-sigma_0 <- 0.1
-sigma_prior <- 0.8
+sigma_0 <- 1
+sigma_prior <- 0.5
 ## Noise (nugget) standard deviation
 sd_0 <- 0.1
+sd_prior <- 0.5
 ## Observation / mesh point ratio
-obs_ratio <- 0.8
+obs_ratio <- 0.5
 
 # Parameter Assertions
 invisible(assert_that(1 <= nt))
@@ -51,13 +52,14 @@ invisible(assert_that(0 < range_s_prior && range_s_prior < 1))
 invisible(assert_that(0 <= sigma_0))
 invisible(assert_that(0 < sigma_prior && sigma_prior < 1))
 invisible(assert_that(0 <= sd_0))
+invisible(assert_that(0 <= sd_prior && sd_prior <= 1))
 invisible(assert_that(0 < obs_ratio && obs_ratio <= 1))
 
 # Generate mesh
 ## Spatial
 spatial_mesh_raw <- meshr::gmsh(
 	spatial_domain,
-	# Mesh.MeshSizeMax = 0.1,
+	Mesh.MeshSizeMax = 0.2,
 	# Mesh.OptimizeThreshold = 0.3,
 	# Mesh.OptimizeNetgen = 1,
 	# Mesh.RecombineAll = 1,
@@ -97,18 +99,11 @@ model <- make_model_121(
 	sigma_prior   = sigma_prior,
 	mode          = "cgeneric",
 	debug         = FALSE,
-	verbose       = TRUE
+	verbose       = FALSE
 )
 
 # Get precision matrix
-Q <- get_Q(
-	model,
-	theta = log(c(
-		range_t_0,
-		range_s_0,
-		sigma_0
-	))
-)
+Q <- make_Q(spatial_fem, temporal_fem, interpretable2spde(sigma_0, range_s_0, range_t_0, 3)$gamma)
 
 # Take a sample from the precision matrix
 x <- inla.qsample(1, Q)[, 1]
@@ -140,12 +135,12 @@ y <- as.vector(A %*% x) + rnorm(nrow(loc) * temporal_mesh$n, sd = sd_0)
 stack <- inla.stack(
 	data          = list(y = y),
 	A             = list(A),
-	effects       = list(inla.spde.make.index('field', n.spde = nrow(spatial_mesh$loc), n.group = temporal_mesh$n)),
+	effects       = list(field = 1:ncol(A)),
 	compress      = FALSE,
 	remove.unused = FALSE
 )
 
-theta_0 <- log(c(sd_0^-2, range_t_0, range_s_0, sigma_0))
+theta_0 <- log(c(sd_0^-2, range_s_0, range_t_0, sigma_0))
 
 est <- inla(
 	y ~ -1 + f(field, model = model),
@@ -153,8 +148,7 @@ est <- inla(
 	control.compute   = list(graph = TRUE, dic = TRUE),
 	control.predictor = list(A = inla.stack.A(stack), compute = TRUE),
 	control.mode      = list(theta = theta_0 + 0.5, restart = TRUE),
-	# TODO: @Lisa check noise prior passed correctly?
-	control.family    = list(hyper = list(theta = list(prior = "pc.prec", param = c(sigma_0, sigma_prior)))),
+	control.family    = list(hyper = list(theta = list(prior = "pc.prec", param = c(sd_0^-2, sd_prior)))),
 	# inla.mode         = "experimental",
 	control.inla      = list(int.strategy = "eb"),
 	verbose           = TRUE
@@ -168,8 +162,8 @@ hyperparam <- est$summary.hyperpar[, c("0.025quant", "0.5quant", "0.975quant")] 
 	mutate(
 		var = case_when(
 			var == 'Precision for the Gaussian observations' ~ 'sd',
-			var == 'Theta1 for field'                        ~ 'theta_t',
-			var == 'Theta2 for field'                        ~ 'theta_s',
+			var == 'Theta1 for field'                        ~ 'theta_s',
+			var == 'Theta2 for field'                        ~ 'theta_t',
 			var == 'Theta3 for field'                        ~ 'theta_e',
 		)
 	) %>%
@@ -184,9 +178,12 @@ hyperparam <- est$summary.hyperpar[, c("0.025quant", "0.5quant", "0.975quant")] 
 	transmute(
 		quantile = name,
 		sd       = sd^-0.5,
-		range_t  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_t"],
-		range_s  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_s"],
-		sigma    = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["sigma"]
+		range_t  = exp(theta_t),
+		range_s  = exp(theta_s),
+		sigma    = exp(theta_e)
+		# range_t  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_t"],
+		# range_s  = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["range_s"],
+		# sigma    = spde2interpretable(theta = c(t = theta_t, s = theta_s, e = theta_e), d = 3)["sigma"]
 	) %>%
 	ungroup() %>%
 	pivot_longer(-quantile) %>%
@@ -252,6 +249,7 @@ write_xdmf(
 	times           = temporal_mesh$loc,
 	node_attributes = list(
 		observed      = matrix(rep(as.integer((1:nrow(spatial_mesh$loc)) %in% i), temporal_mesh$n), spatial_mesh$n, temporal_mesh$n),
+		x             = matrix(x,             spatial_mesh$n, temporal_mesh$n),
 		eta_mean      = matrix(eta$mean,      spatial_mesh$n, temporal_mesh$n),
 		eta_sd        = matrix(eta$sd,        spatial_mesh$n, temporal_mesh$n),
 		eta_q_0.025   = matrix(eta$q_0.025,   spatial_mesh$n, temporal_mesh$n),

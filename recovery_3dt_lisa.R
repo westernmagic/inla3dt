@@ -4,7 +4,7 @@ library(tidyverse)
 library(ggplot2)
 library(assertthat)
 # devtools::install_github("eliaskrainski/INLAspacetime")
-library(INLAspacetime, lib.loc="./local_packages")
+library(INLAspacetime)
 # devtools::install("meshr")
 library(meshr)
 # devtools::install("inla3dt")
@@ -178,7 +178,8 @@ image(A)
 dev.off()
 
 # Generate noisy observations
-y <- as.vector(A %*% x) + rnorm(nrow(loc) * temporal_mesh$n, sd = sd_0)
+noise <- rnorm(nrow(loc) * temporal_mesh$n, sd = sd_0)
+y <- as.vector(A %*% x) + noise
 
 # Stack data for INLA
 # previous effects call generating incorrect matrix for A (separate space & time call is for separable models)
@@ -313,6 +314,7 @@ hyperparam <- est$summary.hyperpar[, c("0.025quant", "0.5quant", "0.975quant")] 
 	mutate(
 		recovered = q_0.025 <= true & true <= q_0.975
 	)
+
 eta <- est$summary.linear.predictor %>%
 	rownames_to_column("var") %>%
 	as_tibble() %>%
